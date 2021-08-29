@@ -65,6 +65,24 @@ router.put('/edit/:id', validateSession, async (req, res) => {
   }
 })
 
+router.get('/:username', validateSession, async (req, res) => {
+  const username = req.user.username
+  try {
+      const query = {
+          where: {
+              owner: username
+          }
+      };
+      
+      const userPatches = await PatchModel.findAll(query);
+      res.status(200).json(userPatches);
+  } catch (err) {
+      res.status(500).json({
+          error: err
+      })
+  }
+})
+
 
 
 module.exports = router;

@@ -22,6 +22,24 @@ router.post('/add', validateSession, async (req, res) => {
   }
 })
 
+router.get('/:username', validateSession, async (req, res) => {
+  const username = req.user.username
+  try {
+      const query = {
+          where: {
+              owner: username
+          }
+      };
+      
+      const userPins = await PinModel.findAll(query);
+      res.status(200).json(userPins);
+  } catch (err) {
+      res.status(500).json({
+          error: err
+      })
+  }
+})
+
 router.delete('/delete/:id', validateSession, async (req, res) => {
   const username = req.user.username;
   const pinId = req.params.id;

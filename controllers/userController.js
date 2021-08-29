@@ -4,6 +4,7 @@ const {UserModel} = require('../models');
 const {UniqueConstraintError} = require('sequelize/lib/errors')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const User = require('../models/user');
 
 router.post('/register', async (req, res) => {
   let {firstName, lastName, username, email, password} = req.body.user
@@ -26,7 +27,7 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     if (err instanceof UniqueConstraintError) {
       res.status(409).json({
-        message: 'Email already in use'
+        message: 'Email or username already in use'
       })
     } else {
       res.status(500).json({
@@ -40,17 +41,20 @@ router.post('/login', async (req, res) => {
   const {email, password} = req.body.user;
 
   try {
+
     let loginUser = await UserModel.findOne({
       where: {
         email
       }
     });
+
     if (loginUser) {
       let passwordComparison = await bcrypt.compare(password, loginUser.password);
       if (passwordComparison) {
         let token = jwt.sign({id: loginUser.id}, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 168});
         res.status(200).json({
           message: 'User successfully logged in!',
+          user: loginUser,
           sessionToken: token
         });
       } else {
